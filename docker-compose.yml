@@ -145,11 +145,9 @@ services:
     restart: unless-stopped
     working_dir: /app
     environment:
-      - NODE_ENV=development
-      - VITE_API_URL=http://localhost:5001/api
-      - VITE_WS_URL=ws://localhost:5001
-    ports:
-      - "3000:3000"
+      - NODE_ENV=production
+      - VITE_API_URL=https://admin.stage.seniorpomidornaya.ru/api
+      - VITE_WS_URL=wss://admin.stage.seniorpomidornaya.ru/ws
     volumes:
       - ./frontend:/app
       - /app/node_modules
@@ -157,7 +155,7 @@ services:
       - backend
     networks:
       - crm_network
-    command: sh -c "npm install && npm run dev -- --host 0.0.0.0"
+    command: sh -c "npm install && npm run build && npm run preview -- --host 0.0.0.0 --port 3000"
 
   # Telegram Bot Service
   telegrambot:
@@ -215,8 +213,6 @@ services:
     image: grafana/grafana:10.0.0
     container_name: crm_grafana
     restart: unless-stopped
-    ports:
-      - "3001:3000"
     environment:
       - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-admin123}
       - GF_USERS_ALLOW_SIGN_UP=false
@@ -224,6 +220,26 @@ services:
     volumes:
       - grafana_data:/var/lib/grafana
       - ./config/grafana/provisioning:/etc/grafana/provisioning
+    networks:
+      - crm_network
+
+  # Nginx - Reverse Proxy
+  nginx:
+    image: nginx:alpine
+    container_name: crm_nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./ssl:/etc/nginx/ssl:ro
+      - nginx_logs:/var/log/nginx
+    depends_on:
+      - frontend
+      - backend
+      - grafana
+      - kafka-ui
     networks:
       - crm_network
 
@@ -235,6 +251,7 @@ volumes:
   telegrambot_logs:
   loki_data:
   grafana_data:
+  nginx_logs:
 
 networks:
   crm_network:

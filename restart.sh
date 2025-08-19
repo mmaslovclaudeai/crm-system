@@ -17,7 +17,7 @@ docker-compose up --build -d
 
 # Ждем запуска
 echo "⏳ Ждем запуска сервисов..."
-sleep 15
+sleep 20
 
 # Проверяем статус
 echo "📊 Статус сервисов:"
@@ -26,12 +26,20 @@ docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
 echo ""
 echo "✅ Система перезапущена!"
 echo "📱 Доступные URL:"
-echo "   Frontend:     http://localhost:3000"
-echo "   Backend API:  http://localhost:5001"
-echo "   Swagger:      http://localhost:3000/api/docs/swagger-ui/"
-echo "   Health:       http://localhost:5001/api/health"
+echo "   Основное приложение: https://admin.stage.seniorpomidornaya.ru"
+echo "   Grafana:            https://grafana.stage.seniorpomidornaya.ru"
+echo "   Kafka UI:           https://kafka-ui.stage.seniorpomidornaya.ru"
+echo ""
+echo "🔐 Учетные данные:"
+echo "   Email:        admin@crm.local"
+echo "   Пароль:       admin123"
+echo ""
+echo "📊 Grafana:"
+echo "   Логин:        admin"
+echo "   Пароль:       admin123"
 echo ""
 echo "🔧 Полезные команды:"
-echo "   Логи:         npm run docker:logs"
-echo "   Остановить:   npm run docker:down"
-echo "   Перезапустить: npm run docker:restart"
+echo "   Логи:         docker-compose logs -f"
+echo "   Остановить:   docker-compose down"
+echo "   Полный запуск: ./start.sh"
+echo "   SSL сертификаты: ./generate-ssl.sh"

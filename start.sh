@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# 🚀 CRM System - Запуск системы
-echo "🚀 Запуск CRM системы..."
+# 🚀 CRM System - Полный запуск системы
+echo "🚀 Полный запуск CRM системы..."
 
 # Проверяем наличие Docker и Docker Compose
 if ! command -v docker &> /dev/null; then
@@ -22,6 +22,13 @@ fi
 
 echo "✅ Docker и Docker Compose готовы"
 
+# Проверяем наличие SSL сертификатов
+if [ ! -d "ssl" ] || [ ! -f "ssl/admin.stage.seniorpomidornaya.ru.crt" ]; then
+    echo "🔐 SSL сертификаты не найдены. Генерируем..."
+    chmod +x generate-ssl.sh
+    ./generate-ssl.sh
+fi
+
 # Устанавливаем зависимости если нужно
 if [ ! -d "frontend/node_modules" ]; then
     echo "📦 Устанавливаем зависимости frontend..."
@@ -37,31 +44,39 @@ fi
 echo "⏹️  Останавливаем существующие контейнеры..."
 docker-compose down
 
+# Очищаем старые образы (опционально)
+echo "🧹 Очищаем старые образы..."
+docker system prune -f
+
 # Запускаем все сервисы
 echo "🚀 Запускаем все сервисы..."
 docker-compose up --build -d
 
 # Ждем запуска
 echo "⏳ Ждем запуска сервисов..."
-sleep 15
+sleep 30
 
 # Проверяем статус
 echo "📊 Статус сервисов:"
 docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
 
 echo ""
-echo "✅ Система запущена!"
+echo "✅ Система полностью запущена!"
 echo "📱 Доступные URL:"
-echo "   Frontend:     http://localhost:3000"
-echo "   Backend API:  http://localhost:5001"
-echo "   Swagger:      http://localhost:3000/api/docs/swagger-ui"
-echo "   Health:       http://localhost:5001/api/health"
+echo "   Основное приложение: https://admin.stage.seniorpomidornaya.ru"
+echo "   Grafana:            https://grafana.stage.seniorpomidornaya.ru"
+echo "   Kafka UI:           https://kafka-ui.stage.seniorpomidornaya.ru"
 echo ""
 echo "🔐 Учетные данные:"
 echo "   Email:        admin@crm.local"
 echo "   Пароль:       admin123"
 echo ""
+echo "📊 Grafana:"
+echo "   Логин:        admin"
+echo "   Пароль:       admin123"
+echo ""
 echo "🔧 Полезные команды:"
-echo "   Логи:         npm run docker:logs"
-echo "   Остановить:   npm run docker:down"
-echo "   Перезапустить: npm run docker:restart"
+echo "   Логи:         docker-compose logs -f"
+echo "   Остановить:   docker-compose down"
+echo "   Перезапустить: ./restart.sh"
+echo "   SSL сертификаты: ./generate-ssl.sh"
